@@ -22,7 +22,9 @@ JPG = 'jpg'
 JPG_GLOB = '*.%s' % JPG
 
 
-class LabelTool():
+class LabelTool(object):
+    """A GUI app for labeling bounding boxes."""
+
     def __init__(self, master):
         # set up the main frame
         self.parent = master
@@ -77,7 +79,7 @@ class LabelTool():
 
         # showing bbox info & delete bbox
         self.lb1 = Label(self.frame, text='Bounding boxes:')
-        self.lb1.grid(row=1, column=2,  sticky=W + N)
+        self.lb1.grid(row=1, column=2, sticky=W + N)
         self.listbox = Listbox(self.frame, width=22, height=12)
         self.listbox.grid(row=2, column=2, sticky=N)
         self.btnDel = Button(self.frame, text='Delete', command=self.delBBox)
@@ -107,7 +109,7 @@ class LabelTool():
         self.tmpLabel2 = Label(self.egPanel, text="Examples:")
         self.tmpLabel2.pack(side=TOP, pady=5)
         self.egLabels = []
-        for i in range(3):
+        for _ in range(3):
             self.egLabels.append(Label(self.egPanel))
             self.egLabels[-1].pack(side=TOP)
 
@@ -118,12 +120,8 @@ class LabelTool():
         self.frame.columnconfigure(1, weight=1)
         self.frame.rowconfigure(4, weight=1)
 
-        # for debugging
-# self.setImage()
-# self.loadDir()
-
     def loadDir(self):
-        """Load all the images in the directory."""
+        """Load all the images in the directory. Display examples if found."""
         s = self.entry.get()
         self.parent.focus()
         self.category = int(s)
@@ -139,11 +137,10 @@ class LabelTool():
             tkMessageBox.showerror("Error!", message='No .%s images found in\n\n%s\n\nImages should be stored in ./images/000, ./images/001, etc. relative to where you run main.py' % (JPG, self.imageDir))
             return
 
-        print 'found %s images in %s' % (len(self.imageList), self.imageDir)
-
         # default to the 1st image in the collection
         self.cur = 1
         self.total = len(self.imageList)
+        print 'found %s images in %s' % (self.total, self.imageDir)
 
         # set up output dir
         self.outDir = os.path.join(wd, 'labels', '%03d' % (self.category))
@@ -151,28 +148,25 @@ class LabelTool():
             os.mkdir(self.outDir)
         print 'Output dir: %s' % self.outDir
 
-        exit(0)
-
-        # load example bboxes
-        self.egDir = os.path.join(r'./Examples', '%03d' % (self.category))
-        if not os.path.exists(self.egDir):
-            return
-        filelist = glob.glob(os.path.join(self.egDir, JPG_GLOB))
-        self.tmp = []
-        self.egList = []
-        random.shuffle(filelist)
-        for (i, f) in enumerate(filelist):
-            if i == 3:
-                break
-            im = Image.open(f)
-            r = min(SIZE[0] / im.size[0], SIZE[1] / im.size[1])
-            new_size = int(r * im.size[0]), int(r * im.size[1])
-            self.tmp.append(im.resize(new_size, Image.ANTIALIAS))
-            self.egList.append(ImageTk.PhotoImage(self.tmp[-1]))
-            self.egLabels[i].config(image=self.egList[-1], width=SIZE[0], height=SIZE[1])
+        # load example bboxes if found
+        self.egDir = os.path.join(wd, 'examples', '%03d' % (self.category))
+        if os.path.exists(self.egDir):
+            filelist = glob.glob(os.path.join(self.egDir, JPG_GLOB))
+            tmp = []
+            self.egList = []
+            random.shuffle(filelist)
+            for (i, f) in enumerate(filelist):
+                if i == 3:
+                    break
+                im = Image.open(f)
+                r = min(SIZE[0] / im.size[0], SIZE[1] / im.size[1])
+                new_size = int(r * im.size[0]), int(r * im.size[1])
+                tmp.append(im.resize(new_size, Image.ANTIALIAS))
+                self.egList.append(ImageTk.PhotoImage(tmp[-1]))
+                self.egLabels[i].config(image=self.egList[-1], width=SIZE[0], height=SIZE[1])
 
         self.loadImage()
-        print('%d images loaded from %s' % (self.total, s))
+        print '%d images loaded from %s' % (self.total, s)
 
     def loadImage(self):
         # load image
