@@ -123,32 +123,35 @@ class LabelTool():
 # self.loadDir()
 
     def loadDir(self):
+        """Load all the images in the directory."""
         s = self.entry.get()
         self.parent.focus()
         self.category = int(s)
         wd = os.getcwd()
         # get image list
-        self.imageDir = os.path.join(wd, '%03d' % (self.category))
+        self.imageDir = os.path.join(wd, 'images', '%03d' % (self.category))
         if not os.path.isdir(self.imageDir):
-            tkMessageBox.showerror("Error!", message='Directory not found: \n%s\n\nDid you remember to `python main.py` from the dir with 001, 002, 003, etc.?' % self.imageDir)
-            exit(0)
-
-        self.imageList = glob.glob(os.path.join(self.imageDir, JPG_GLOB))
-        if len(self.imageList) == 0:
-            msg = 'No .%s images found in %s' % (JPG, )
-            print(msg)
+            tkMessageBox.showerror("Error!", message='Directory not found:\n\n%s\n\nDid you remember to `python main.py` from the dir above 000, 001, 002, etc.?' % self.imageDir)
             return
 
-        exit(0)
+        self.imageList = glob.glob(os.path.join(self.imageDir, JPG_GLOB))
+        if not self.imageList:
+            tkMessageBox.showerror("Error!", message='No .%s images found in\n\n%s\n\nImages should be stored in ./images/000, ./images/001, etc. relative to where you run main.py' % (JPG, self.imageDir))
+            return
+
+        print 'found %s images in %s' % (len(self.imageList), self.imageDir)
 
         # default to the 1st image in the collection
         self.cur = 1
         self.total = len(self.imageList)
 
         # set up output dir
-        self.outDir = os.path.join(r'./Labels', '%03d' % (self.category))
+        self.outDir = os.path.join(wd, 'labels', '%03d' % (self.category))
         if not os.path.exists(self.outDir):
             os.mkdir(self.outDir)
+        print 'Output dir: %s' % self.outDir
+
+        exit(0)
 
         # load example bboxes
         self.egDir = os.path.join(r'./Examples', '%03d' % (self.category))
