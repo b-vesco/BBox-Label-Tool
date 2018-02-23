@@ -205,7 +205,7 @@ class LabelTool(object):
             f.write('%d\n' % len(self.bboxList))
             for bbox in self.bboxList:
                 f.write(' '.join(map(str, bbox)) + '\n')
-        print('Image No. %d saved' % (self.cur))
+        print 'Image No. %d saved' % (self.cur)
 
     def mouseClick(self, event):
         if self.STATE['click'] == 0:
