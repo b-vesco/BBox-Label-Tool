@@ -39,7 +39,7 @@ class LabelTool(object):
         self.egDir = ''
         self.egList = []
         self.outDir = ''
-        self.cur = 0
+        self.cur = 0  # 1 means load 0th elem from the list
         self.total = 0
         self.category = 0
         self.imagename = ''
@@ -169,28 +169,28 @@ class LabelTool(object):
         print '%d images loaded from %s' % (self.total, s)
 
     def loadImage(self):
+        """Actually load and display the current image."""
         # load image
         imagepath = self.imageList[self.cur - 1]
-        self.img = Image.open(imagepath)
-        self.tkimg = ImageTk.PhotoImage(self.img)
+        self.tkimg = ImageTk.PhotoImage(Image.open(imagepath))
         self.mainPanel.config(width=max(self.tkimg.width(), 400), height=max(self.tkimg.height(), 400))
         self.mainPanel.create_image(0, 0, image=self.tkimg, anchor=NW)
         self.progLabel.config(text="%04d/%04d" % (self.cur, self.total))
 
         # load labels
         self.clearBBox()
-        self.imagename = os.path.split(imagepath)[-1].split('.')[0]
+        self.imagename = os.path.splitext(os.path.split(imagepath)[-1])[0]
         labelname = self.imagename + '.txt'
         self.labelfilename = os.path.join(self.outDir, labelname)
-        bbox_cnt = 0
+        # bbox_cnt = 0
         if os.path.exists(self.labelfilename):
             with open(self.labelfilename) as f:
                 for (i, line) in enumerate(f):
                     if i == 0:
-                        bbox_cnt = int(line.strip())
+                        # bbox_cnt = int(line.strip())
                         continue
                     tmp = [int(t.strip()) for t in line.split()]
-# print tmp
+
                     self.bboxList.append(tuple(tmp))
                     tmpId = self.mainPanel.create_rectangle(tmp[0], tmp[1],
                                                             tmp[2], tmp[3],
@@ -279,13 +279,6 @@ class LabelTool(object):
             self.saveImage()
             self.cur = idx
             self.loadImage()
-
-# def setImage(self, imagepath = r'test2.png'):
-##        self.img = Image.open(imagepath)
-##        self.tkimg = ImageTk.PhotoImage(self.img)
-##        self.mainPanel.config(width = self.tkimg.width())
-##        self.mainPanel.config(height = self.tkimg.height())
-##        self.mainPanel.create_image(0, 0, image = self.tkimg, anchor=NW)
 
 
 if __name__ == '__main__':
